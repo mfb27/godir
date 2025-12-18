@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录/注册</title>
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>用户登录/注册</h1>
+        
+        <div id="message" class="message"></div>
+
+        <div id="authTabs">
+            <div class="tab-container">
+                <div class="tab active" onclick="switchTab('login')">登录</div>
+                <div class="tab" onclick="switchTab('register')">注册</div>
+            </div>
+        </div>
+
+        <!-- 登录表单 -->
+        <div id="loginForm" class="form-container active">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" placeholder="请输入用户名" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" placeholder="请输入密码" required>
+            </div>
+            
+            <button class="btn" onclick="handleLogin()">登录</button>
+            <div class="link-text">
+                还没有账号？<a onclick="switchTab('register')">立即注册</a>
+            </div>
+        </div>
+
+        <!-- 注册表单 -->
+        <div id="registerForm" class="form-container">
+            <div class="form-group">
+                <label for="regUsername">用户名</label>
+                <input type="text" id="regUsername" name="regUsername" placeholder="请输入用户名" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="regPassword">密码</label>
+                <input type="password" id="regPassword" name="regPassword" placeholder="请输入密码（至少6位）" required minlength="6">
+            </div>
+            
+            <button class="btn" onclick="handleRegister()">注册</button>
+            <div class="link-text">
+                已有账号？<a onclick="switchTab('login')">立即登录</a>
+            </div>
+        </div>
+
+        <div id="userInfo" class="user-info">
+            <p><strong>用户ID:</strong> <span id="userId"></span></p>
+            <p><strong>用户名:</strong> <span id="userName"></span></p>
+            <button class="btn btn-secondary" onclick="handleLogout()">退出登录</button>
+        </div>
+    </div>
+
+    <script src="js/login.js"></script>
+</body>
+</html>

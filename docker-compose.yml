@@ -1,0 +1,103 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: godir-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "123123"
+      MYSQL_DATABASE: godir
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  minio:
+    image: minio/minio:latest
+    container_name: godir-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+
+  redis:
+    image: redis:latest
+    container_name: godir-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  es:
+    image: elastic/elasticsearch:9.1.8
+    container_name: godir-es
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+  app:
+    build: .
+    container_name: godir-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - minio
+      - redis
+      - es
+    environment:
+      CONFIG_FILE: /app/config/dev.yml
+    volumes:
+      - godir_data:/app
+
+  frontend:
+    build: ./frontend
+    container_name: godir-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+
+volumes:
+  mysql_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: D:/study/docker-volumes/mysql-8.0
+  minio_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: D:/study/docker-volumes/minio
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: D:/study/docker-volumes/redis
+  es_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: D:/study/docker-volumes/es
+  godir_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: D:/study/docker-volumes/godir

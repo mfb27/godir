@@ -1,0 +1,60 @@
+# Godir 项目规范
+
+## 技术栈
+- Go 1.23.1
+- Gin Web框架
+- GORM + MySQL
+- Redis
+- MinIO对象存储
+- Elasticsearch
+- JWT认证
+- Zap日志
+
+## 项目结构
+```
+internal/
+  common/     # 通用组件（ginx, jwt, logger, miniox, redis, svc等）
+  handler/    # HTTP处理器（auth, user, material, volcengine）
+  model/      # 数据模型（GORM models）
+  service/    # 业务逻辑层
+  types/      # 请求/响应类型定义
+```
+
+## 代码规范
+
+### Handler层
+- 使用 `base.WrapHandler` 或 `base.WrapHandlerObj` 包装处理器
+- Handler接收 `*gin.Context` 和请求类型，返回响应类型和 `error`
+- 通过 `svc.Cfg()`, `svc.DB()`, `svc.Redis()`, `svc.Minio()`, `svc.ES()` 获取服务
+- 使用 `exterr` 包返回标准错误
+
+### 错误处理
+- 使用 `godir/internal/common/exterr` 定义业务错误
+- 统一错误响应格式
+
+### 日志
+- 使用 `zap.SugaredLogger`，通过 `c.Get("logger")` 获取
+- 日志包含 request_id
+
+### 配置
+- 配置文件使用 YAML，路径通过 `-c` 参数指定
+- 配置结构定义在 `internal/common/svc/config.go`
+
+### 数据库
+- 使用 GORM，通过 `svc.DB()` 获取实例
+- Model 定义在 `internal/model/`
+
+### 认证
+- JWT 中间件在 `internal/handler/auth/middleware.go`
+- 受保护路由使用 `auth.RequireAuth()` 中间件
+
+### 命名规范
+- 包名小写，简短
+- 函数名驼峰，公开函数首字母大写
+- 常量使用大写字母和下划线
+
+### 依赖注入
+- 服务通过 `svc.ServiceContext` 统一管理
+- Handler 通过 `BaseHandler` 获取依赖
+
+

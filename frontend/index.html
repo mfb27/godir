@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoDir - 轻量级文件分享平台</title>
+    <script src="https://cdn.jsdelivr.net/npm/aws-sdk@2/dist/aws-sdk.min.js"></script>
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/material.css">
+    <style>
+        /* 合并样式以解决冲突 */
+        .header {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 24px auto;
+            padding: 0 24px;
+            display: flex;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* 左侧导航栏样式 */
+        .sidebar {
+            width: 200px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 16px 0;
+            margin-right: 24px;
+            height: calc(100vh - 160px); /* 增加高度 */
+            position: sticky;
+            top: 24px;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-menu-item {
+            padding: 16px 24px; /* 增加padding使项目更高 */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #333;
+            text-decoration: none;
+            font-size: 16px; /* 增加字体大小 */
+        }
+        
+        .sidebar-menu-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .sidebar-menu-item.active {
+            background: #e6f7ff;
+            border-left: 3px solid #1890ff;
+            font-weight: 500;
+        }
+        
+        .sidebar-menu-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+        }
+        
+        /* 主页容器 */
+        .main-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+        }
+        
+        .welcome-section h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #333;
+        }
+        
+        /* 发布素材列表样式 */
+        .published-materials-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .published-material-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .published-material-item:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        .material-thumb {
+            width: 120px;
+            height: 120px;
+            flex-shrink: 0;
+            border-radius: 4px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .material-thumb:hover {
+            transform: scale(1.02);
+        }
+        
+        .material-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .user-avatar-tiny {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .material-description {
+            color: #666;
+            line-height: 1.5;
+            flex: 1;
+        }
+        
+        .material-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #999;
+        }
+        
+        .material-name {
+            font-weight: 500;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 36px;
+            height: 36px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+        
+        .play-overlay:hover {
+            opacity: 1;
+        }
+        
+        .play-overlay::after {
+            content: "";
+            display: block;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 10px solid white;
+            margin-left: 2px;
+        }
+        
+        .material-icon {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        
+        /* 发布素材卡片样式 - 保持原有卡片样式不变 */
+        .published-material-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 16px;
+            margin-bottom: 20px;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .published-material-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        .user-info-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .user-avatar-small {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+        
+        .publish-description-content {
+            margin-bottom: 16px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .material-preview {
+            position: relative;
+        }
+        
+        .material-cover {
+            width: 100%;
+            height: 200px;
+            /* 显示整张封面图片，不裁剪；封面靠左对齐 */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: left center;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .material-cover:hover {
+            transform: scale(1.02);
+        }
+
+        /* 文件卡片和封面交互 */
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .file-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+            position: relative;
+            overflow: visible;
+        }
+
+        .file-cover-wrapper {
+            position: relative;
+            border-radius: 6px;
+            overflow: visible; /* 允许下拉菜单超出封面区域显示完整 */
+        }
+
+        .file-cover {
+            width: 100%;
+            height: 140px;
+            /* 按比例缩放，展示完整封面 */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.18s ease;
+        }
+
+        .file-card:hover .file-cover {
+            transform: scale(1.02);
+        }
+
+        .file-checkbox {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 60;
+            display: none;
+            width: 18px;
+            height: 18px;
+        }
+
+        /* 鼠标悬停显示复选框 */
+        .file-card:hover .file-checkbox {
+            display: block;
+        }
+
+        /* 选中后一直展示 */
+        .file-checkbox:checked {
+            display: block !important;
+        }
+
+        .file-menu-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 6;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .file-menu-dropdown {
+            position: absolute;
+            top: 42px;
+            right: 8px;
+            z-index: 9999;
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+            min-width: 160px;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .file-menu-dropdown.visible {
+            display: flex;
+        }
+
+        .file-menu-dropdown button {
+            background: transparent;
+            border: none;
+            padding: 10px 12px;
+            text-align: left;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .file-menu-dropdown button:hover {
+            background: #f5f5f5;
+        }
+
+        /* 搜索框内置按钮 */
+        .search-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .search-wrapper input[type="text"] {
+            padding-right: 84px;
+        }
+
+        .search-icon {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 8px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 6px;
+        }
+
+        .search-icon.clear {
+            right: 40px;
+            display: none; /* 默认隐藏，JS 根据输入内容显示 */
+        }
+
+        .search-icon.search { display: inline-block; }
+        
+        .material-name-full {
+            margin-top: 12px;
+            font-weight: 500;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* 个人中心样式 */
+        .profile-form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #40a9ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+        
+        .avatar-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 2px dashed #d9d9d9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .avatar-placeholder {
+            color: #999;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #1890ff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #40a9ff;
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #d9d9d9;
+        }
+        
+        /* 消息提示样式 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+        
+        .toast-success {
+            background-color: #52c41a;
+        }
+        
+        .toast-error {
+            background-color: #ff4d4f;
+        }
+        
+        .toast-info {
+            background-color: #1890ff;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 24px;
+                height: auto;
+            }
+            
+            .published-material-item {
+                flex-direction: column;
+            }
+            
+            .material-thumb {
+                width: 100%;
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="logo">GoDir</a>
+        <div class="header-actions">
+            <div class="user-avatar-container" id="userAvatarContainer" style="display: none;">
+                <div class="user-avatar" id="userAvatar"></div>
+                <div class="user-dropdown">
+                    <div class="user-info">
+                        <div class="user-info-avatar" id="dropdownAvatar"></div>
+                        <div class="user-info-text">
+                            <div class="user-info-name" id="dropdownName"></div>
+                            <div class="user-info-id">ID: <span id="dropdownId"></span></div>
+                        </div>
+                    </div>
+                    <div class="menu-list">
+                        <a href="#" class="menu-item" onclick="showProfilePage(); return false;">
+                            <div class="menu-item-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            <div class="menu-item-text">个人中心</div>
+                        </a>
+                        <a href="#" class="menu-item" id="materialCenterLink" onclick="showMaterialPage(); return false;">
+                            <div class="menu-item-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                </svg>
+                            </div>
+                            <div class="menu-item-text">素材中心</div>
+                        </a>
+                        <div class="menu-item" onclick="handleLogout()" style="border-top: 1px solid #f0f0f0; margin-top: 4px; padding-top: 12px;">
+                            <div class="menu-item-icon" style="color: #ff6b6b;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                            </div>
+                            <div class="menu-item-text" style="color: #ff6b6b;">退出登录</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 左侧导航栏 -->
+        <div class="sidebar">
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="#" class="sidebar-menu-item" onclick="console.log('点击主页链接'); showHomePage(); return false;">
+                        <div class="sidebar-menu-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                            </svg>
+                        </div>
+                        <span>主页</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-menu-item" onclick="showProfilePage(); return false;">
+                        <div class="sidebar-menu-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                        <span>个人中心</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-menu-item active" id="sidebarMaterialLink" onclick="showMaterialPage(); return false;">
+                        <div class="sidebar-menu-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                        </div>
+                        <span>素材中心</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <!-- 主页内容 -->
+            <div id="homePage">
+                <div class="main-container" id="mainContainer">
+                    <h2 class="published-materials-title">最新发布</h2>
+                    <div class="published-materials-list" id="publishedMaterialsList">
+                        <!-- 发布的素材将通过JavaScript动态填充 -->
+                        <div class="loading-placeholder">加载中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 素材中心内容 -->
+            <div id="materialPage" class="hidden">
+                <div class="toolbar">
+                    <div class="select-all-container">
+                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                        <label for="selectAllCheckbox">全选</label>
+                    </div>
+                    <div class="action-buttons">
+                        <div class="search-wrapper" style="margin-right:12px;">
+                            <input type="text" id="materialSearchInput" placeholder="搜索素材名称" style="padding:8px; border:1px solid #d9d9d9; border-radius:4px; width:240px;">
+                            <button id="materialClearBtn" class="search-icon clear" title="清空搜索" onclick="clearMaterialSearch()">✕</button>
+                            <button id="materialSearchBtn" class="search-icon search" title="搜索" onclick="onMaterialSearch()">🔍</button>
+                        </div>
+                        <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            上传文件
+                        </button>
+                        <button class="batch-delete-btn" id="batchDeleteBtn" style="display:none;" onclick="batchDeleteFiles()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18"></path>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            批量删除
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="file-list-container">
+                    <div class="file-list" id="fileList">
+                        <!-- 文件列表将通过JavaScript动态填充 -->
+                    </div>
+                    
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-icon">📁</div>
+                        <div class="empty-text">暂无文件</div>
+                        <div class="empty-subtext">点击上方按钮上传您的第一个文件</div>
+                    </div>
+                </div>
+                
+                <input type="file" id="fileInput" multiple onchange="handleFileSelect(event)">
+            </div>
+            
+            <!-- 个人中心内容 -->
+            <div id="profilePage" class="hidden">
+                <div class="main-container">
+                    <h2 style="margin-bottom: 24px; color: #333;">个人中心</h2>
+                    <form id="profileForm" class="profile-form">
+                        <div class="form-group">
+                            <label for="avatar">头像:</label>
+                            <div class="avatar-upload">
+                                <div class="avatar-preview" id="avatarPreview">
+                                    <img id="avatarImage" src="" alt="头像预览" style="display: none;">
+                                    <div id="avatarPlaceholder" class="avatar-placeholder">点击上传头像</div>
+                                </div>
+                                <input type="file" id="avatar" name="avatar" accept="image/*" style="display: none;">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('avatar').click()">选择图片</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="nickname">昵称:</label>
+                            <input type="text" id="nickname" name="nickname" maxlength="128">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="gender">性别:</label>
+                            <select id="gender" name="gender">
+                                <option value="0">未知</option>
+                                <option value="1">男</option>
+                                <option value="2">女</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="showHomePage()">取消</button>
+                            <button type="submit" class="btn btn-primary">保存</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- 页面切换按钮 (移动设备上可见) -->
+            <div id="pageToggle" style="text-align: center; margin-top: 20px; display: none;">
+                <button id="toggleToMaterial" class="upload-btn" onclick="showMaterialPage()">
+                    进入素材中心
+                </button>
+                <button id="toggleToHome" class="upload-btn" onclick="showHomePage()">
+                    返回主页
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="upload-progress" id="uploadProgress" style="display: none;">
+        <div class="progress-list" id="progressList">
+            <!-- Progress items will be added here dynamically -->
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/index.js"></script>
+    <script src="js/material.js"></script>
+    <script>
+        // 页面切换函数
+        function showMaterialPage() {
+            // 隐藏其他页面，显示素材中心页面
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('profilePage').classList.add('hidden');
+            document.getElementById('materialPage').classList.remove('hidden');
+            
+            // 更新导航按钮状态
+            document.getElementById('toggleToMaterial').style.display = 'none';
+            document.getElementById('toggleToHome').style.display = 'inline-block';
+            
+            // 更新左侧导航栏活动状态
+            document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById('sidebarMaterialLink').classList.add('active');
+            
+            // 加载文件列表
+            const userInfo = checkLoginStatus();
+            if (userInfo) {
+                loadFileList();
+                
+                // 加载用户详细信息并显示真实头像
+                loadUserDetailsForDisplay(userInfo.token);
+            }
+        }
+        
+        // function showHomePage() {
+        //     document.getElementById('materialPage').classList.add('hidden');
+        //     document.getElementById('homePage').classList.remove('hidden');
+        //     document.getElementById('toggleToHome').style.display = 'none';
+        //     document.getElementById('toggleToMaterial').style.display = 'inline-block';
+            
+        //     // 更新左侧导航栏活动状态
+        //     document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+        //         item.classList.remove('active');
+        //     });
+        //     document.querySelector('.sidebar-menu-item[href="#"]').classList.add('active'); // 主页链接
+            
+        //     // 如果是未登录状态，显示未授权页面
+        //     const userInfo = checkLoginStatusMerged();
+        //     if (!userInfo) {
+        //         document.getElementById('mainContainer').style.display = 'none';
+        //         document.getElementById('unauthorizedContainer').style.display = 'block';
+        //     }
+        // }
+        
+        // 重写检查登录状态函数以适应合并后的页面
+        function checkLoginStatusMerged() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                return null;
+            }
+
+            try {
+                // 从token中解析用户信息
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return {
+                    userId: payload.userId,
+                    username: payload.username || '用户',
+                    token: token
+                };
+            } catch (e) {
+                console.error('解析token失败:', e);
+                localStorage.removeItem('token');
+                return null;
+            }
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            const userInfo = checkLoginStatus();
+            if (userInfo) {
+                displayUserInfo(userInfo);
+                document.getElementById('toggleToMaterial').style.display = 'inline-block';
+            } else {
+                document.getElementById('mainContainer').style.display = 'none';
+                document.getElementById('unauthorizedContainer').style.display = 'block';
+            }
+            
+            // 在小屏幕上显示切换按钮
+            function checkScreenSize() {
+                const pageToggle = document.getElementById('pageToggle');
+                const sidebar = document.querySelector('.sidebar');
+                
+                if (window.innerWidth <= 768) {
+                    pageToggle.style.display = 'block';
+                    sidebar.style.display = 'none';
+                } else {
+                    pageToggle.style.display = 'none';
+                    sidebar.style.display = 'block';
+                }
+            }
+            
+            // 初始检查
+            checkScreenSize();
+            
+            // 窗口大小改变时检查
+            window.addEventListener('resize', checkScreenSize);
+        });
+    </script>
+</body>
+</html>

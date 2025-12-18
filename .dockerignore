@@ -1,0 +1,32 @@
+# 忽略.git目录
+.git
+
+# 忽略所有隐藏文件
+.*
+
+# 但保留.dockerignore本身
+!.dockerignore
+
+# 忽略测试目录
+test/
+
+# 忽略脚本目录
+script/
+
+# 忽略README文件
+README.md
+
+# 忽略开发环境配置
+config/dev.yml
+
+# 忽略编译产物
+godir
+*.exe
+*.prof
+
+# 忽略前端文件
+frontend/
+
+# 忽略IDE配置
+.vscode/
+.cursor/
