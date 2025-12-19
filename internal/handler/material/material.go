@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"godir/internal/common/ginx"
 	"godir/internal/common/jwt"
 	"godir/internal/common/redis"
 	"godir/internal/common/svc"
-	"godir/internal/handler/base"
 	"godir/internal/model"
 	"godir/internal/types"
 
@@ -20,10 +20,10 @@ import (
 )
 
 type Material struct {
-	base.BaseHandler
+	ginx.BaseHandler
 }
 
-func (h *Material) New() base.BaseHandlerInterface {
+func (h *Material) New() ginx.BaseHandlerInterface {
 	return new(Material)
 }
 

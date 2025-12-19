@@ -2,20 +2,20 @@ package volcengine
 
 import (
 	"godir/internal/common/exterr"
+	"godir/internal/common/ginx"
 	"godir/internal/common/svc"
 	"godir/internal/common/volcengine"
-	"godir/internal/handler/base"
 	"godir/internal/types"
 
 	"github.com/gin-gonic/gin"
 )
 
 type VolcEngine struct {
-	base.BaseHandler
+	ginx.BaseHandler
 	client *volcengine.Client
 }
 
-func (h *VolcEngine) New() base.BaseHandlerInterface {
+func (h *VolcEngine) New() ginx.BaseHandlerInterface {
 	cfg := svc.Cfg()
 	client := volcengine.NewClient(
 		cfg.VolcEngine.AccessKeyID,

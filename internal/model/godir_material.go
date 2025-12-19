@@ -1,11 +1,11 @@
 package model
 
-import (
-	"gorm.io/gorm"
-)
+import "gorm.io/gorm"
 
 type GodirMaterial struct {
-	gorm.Model
+	Model[GodirMaterial]
+
+	Base
 	UserID      uint   `gorm:"not null;index"`
 	FileName    string `gorm:"size:255;not null"`
 	FileSize    int64  `gorm:"not null"`
@@ -21,4 +21,10 @@ type GodirMaterial struct {
 
 func (GodirMaterial) TableName() string {
 	return "godir_material"
+}
+
+func NewGodirMaterial(db *gorm.DB) *GodirMaterial {
+	m := &GodirMaterial{}
+	m.db = db
+	return m
 }
