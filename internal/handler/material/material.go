@@ -9,10 +9,11 @@ import (
 	"strings"
 	"time"
 
+	"godir/internal/common/ginx"
 	"godir/internal/common/jwt"
 	"godir/internal/common/redis"
 	"godir/internal/common/svc"
-	"godir/internal/handler/base"
+	"godir/internal/common/util/pathutil"
 	"godir/internal/model"
 	"godir/internal/types"
 
@@ -20,10 +21,10 @@ import (
 )
 
 type Material struct {
-	base.BaseHandler
+	ginx.BaseHandler
 }
 
-func (h *Material) New() base.BaseHandlerInterface {
+func (h *Material) New() ginx.BaseHandlerInterface {
 	return new(Material)
 }
 
@@ -91,23 +92,20 @@ func (h *Material) Save(c *gin.Context, req *types.MaterialSaveReq) (*types.Mate
 		return nil, fmt.Errorf("用户ID格式错误")
 	}
 
-	cfg := svc.Cfg()
-	protocol := "http"
-	if cfg.MinIO.UseSSL {
-		protocol = "https"
-	}
-	urlStr := fmt.Sprintf("%s://%s/%s/%s", protocol, cfg.MinIO.Endpoint, req.Bucket, req.Key)
-
 	// 创建文件记录
 	material := model.GodirMaterial{
 		UserID:      userIDUint,
 		FileName:    req.FileName,
+		FileExt:     pathutil.Ext(req.FileName),
 		FileSize:    req.FileSize,
 		ContentType: req.ContentType,
-		Bucket:      req.Bucket,
-		Key:         req.Key,
-		URL:         urlStr,
+		OssBucket:   req.Bucket,
+		OssFilePath: req.Key,
 	}
+
+	// if err := material.Save(&material); err != nil {
+	// 	return nil, fmt.Errorf("保存文件信息失败: %w", err)
+	// }0
 
 	if err := h.DB.Create(&material).Error; err != nil {
 		return nil, fmt.Errorf("保存文件信息失败: %w", err)
@@ -118,17 +116,15 @@ func (h *Material) Save(c *gin.Context, req *types.MaterialSaveReq) (*types.Mate
 	if esClient != nil {
 		// 构造索引文档
 		doc := map[string]interface{}{
-			"id":           material.ID,
-			"user_id":      material.UserID,
-			"file_name":    material.FileName,
-			"file_size":    material.FileSize,
-			"content_type": material.ContentType,
-			"bucket":       material.Bucket,
-			"key":          material.Key,
-			"url":          material.URL,
-			"cover_key":    material.CoverKey,
-			"cover_url":    material.CoverURL,
-			"created_at":   material.CreatedAt,
+			"id":                  material.ID,
+			"user_id":             material.UserID,
+			"file_name":           material.FileName,
+			"file_size":           material.FileSize,
+			"content_type":        material.ContentType,
+			"oss_bucket":          material.OssBucket,
+			"oss_file_path":       material.OssFilePath,
+			"cover_oss_file_path": material.CoverOssFilePath,
+			"created_at":          material.CreatedAt,
 		}
 
 		b, err := json.Marshal(doc)
@@ -257,8 +253,8 @@ func (h *Material) List(c *gin.Context, req *types.MaterialListReq) (*types.Mate
 
 			presigned, err := minioClient.PresignedGetObject(
 				c.Request.Context(),
-				m.Bucket,
-				m.Key,
+				m.OssBucket,
+				m.OssFilePath,
 				time.Hour*24*7, // 7天有效期
 				reqParams)
 			if err == nil {
@@ -271,8 +267,8 @@ func (h *Material) List(c *gin.Context, req *types.MaterialListReq) (*types.Mate
 
 			getURL, err := minioClient.PresignedGetObject(
 				c.Request.Context(),
-				m.Bucket,
-				m.Key,
+				m.OssBucket,
+				m.OssFilePath,
 				time.Hour*24*7, // 7天有效期
 				inlineParams)
 			if err == nil {
@@ -280,13 +276,13 @@ func (h *Material) List(c *gin.Context, req *types.MaterialListReq) (*types.Mate
 			}
 
 			// cover preview URL (inline) for thumbnail display
-			if m.CoverKey != "" {
+			if m.CoverOssFilePath != "" {
 				coverParams := make(map[string][]string)
 				coverParams["response-content-disposition"] = []string{"inline"}
 				coverURL, err := minioClient.PresignedGetObject(
 					c.Request.Context(),
-					m.Bucket,
-					m.CoverKey,
+					m.OssBucket,
+					m.CoverOssFilePath,
 					time.Hour*24*7,
 					coverParams,
 				)
@@ -301,8 +297,6 @@ func (h *Material) List(c *gin.Context, req *types.MaterialListReq) (*types.Mate
 			FileName:        m.FileName,
 			FileSize:        m.FileSize,
 			ContentType:     m.ContentType,
-			URL:             m.URL,
-			CoverURL:        m.CoverURL,
 			CoverPreviewURL: coverPreviewURL, // 前端可用此字段展示封面
 			DownloadURL:     downloadURL,
 			PreviewURL:      previewURL,
@@ -689,8 +683,8 @@ func (h *Material) ListPublished(c *gin.Context, req *types.PublishListReq) (*ty
 
 				presignedURL, err := svc.Minio().PresignedGetObject(
 					c,
-					material.Bucket,
-					material.Key,
+					material.OssBucket,
+					material.OssFilePath,
 					time.Hour*24, // 24小时有效期
 					inlineParams)
 				if err == nil {
@@ -698,13 +692,13 @@ func (h *Material) ListPublished(c *gin.Context, req *types.PublishListReq) (*ty
 				}
 
 				// 如果有封面，也生成封面的预览URL
-				if material.CoverKey != "" {
+				if material.CoverOssFilePath != "" {
 					coverParams := make(url.Values)
 					coverParams.Set("response-content-disposition", "inline")
 					coverPresignedURL, err := svc.Minio().PresignedGetObject(
 						c,
-						material.Bucket,
-						material.CoverKey,
+						material.OssBucket,
+						material.CoverOssFilePath,
 						time.Hour*24,
 						coverParams,
 					)
@@ -719,8 +713,6 @@ func (h *Material) ListPublished(c *gin.Context, req *types.PublishListReq) (*ty
 				FileName:        material.FileName,
 				FileSize:        material.FileSize,
 				ContentType:     material.ContentType,
-				URL:             material.URL,
-				CoverURL:        material.CoverURL,
 				PreviewURL:      previewUrl,
 				CoverPreviewURL: coverPreviewUrl,
 				CreatedAt:       material.CreatedAt.Format("2006-01-02 15:04:05"),

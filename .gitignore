@@ -1,6 +1,6 @@
 # 配置文件（包含敏感信息）
 config/dev.yml
-config/local.yml
+# config/local.yml
 config/*.yml
 !config/*.example.yml
 

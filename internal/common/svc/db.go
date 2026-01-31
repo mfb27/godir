@@ -40,6 +40,7 @@ func InitDB(c *Config) (*gorm.DB, error) {
 		&model.GodirMaterial{},
 		&model.GodirPublishedMaterial{},
 		&model.GodirPublishedLike{},
+		&model.GodirAiApp{},
 	)
 
 	// 获取底层sql.DB对象进行连接池配置

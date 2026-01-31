@@ -3,8 +3,8 @@ package auth
 import (
 	"fmt"
 
+	"godir/internal/common/ginx"
 	"godir/internal/common/jwt"
-	"godir/internal/handler/base"
 	"godir/internal/model"
 	"godir/internal/types"
 
@@ -13,17 +13,20 @@ import (
 )
 
 type Auth struct {
-	base.BaseHandler
+	ginx.BaseHandler
 }
 
-func (h *Auth) New() base.BaseHandlerInterface {
+// 用于WrapHandlerObj函数生成实例
+func (h *Auth) New() ginx.BaseHandlerInterface {
 	return new(Auth)
 }
 
 // Login 用户登录
 func (h *Auth) Login(c *gin.Context, req *types.AuthLoginReq) (*types.AuthLoginResp, error) {
+
 	// 查询用户
 	var user model.GodirUser
+
 	if err := h.DB.Where("username = ?", req.Username).First(&user).Error; err != nil {
 		return nil, fmt.Errorf("用户名或密码错误")
 	}

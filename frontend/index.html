@@ -8,47 +8,51 @@
     <link rel="stylesheet" href="css/index.css">
     <link rel="stylesheet" href="css/material.css">
     <style>
-        /* 合并样式以解决冲突 */
         .header {
-            background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
             padding: 0 24px;
             height: 64px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
-        
+
         .logo {
+            font-family: var(--font-display);
+            letter-spacing: 0.08em;
             font-size: 20px;
             font-weight: 600;
-            color: #333;
+            color: var(--text);
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 24px auto;
             padding: 0 24px;
             display: flex;
         }
-        
+
         .hidden {
             display: none !important;
         }
-        
-        /* 左侧导航栏样式 */
+
         .sidebar {
             width: 200px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
             padding: 16px 0;
             margin-right: 24px;
-            height: calc(100vh - 160px); /* 增加高度 */
+            height: calc(100vh - 160px);
             position: sticky;
             top: 24px;
         }
-        
+
         .sidebar-menu {
             list-style: none;
             padding: 0;
@@ -57,48 +61,48 @@
             display: flex;
             flex-direction: column;
         }
-        
+
         .sidebar-menu-item {
-            padding: 16px 24px; /* 增加padding使项目更高 */
+            padding: 16px 24px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 12px;
-            color: #333;
+            color: var(--text);
             text-decoration: none;
-            font-size: 16px; /* 增加字体大小 */
+            font-size: 16px;
         }
-        
+
         .sidebar-menu-item:hover {
-            background: #f5f5f5;
+            background: rgba(17, 24, 39, 0.04);
         }
-        
+
         .sidebar-menu-item.active {
-            background: #e6f7ff;
-            border-left: 3px solid #1890ff;
-            font-weight: 500;
+            background: rgba(15, 118, 110, 0.10);
+            border-left: 3px solid var(--primary);
+            font-weight: 600;
         }
-        
+
         .sidebar-menu-icon {
             width: 20px;
             height: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #667eea;
+            color: var(--primary);
         }
-        
-        /* 主内容区域 */
+
         .main-content {
             flex: 1;
         }
-        
-        /* 主页容器 */
+
         .main-container {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
             padding: 24px;
         }
         
@@ -106,7 +110,7 @@
             font-size: 24px;
             font-weight: 600;
             margin-bottom: 24px;
-            color: #333;
+            color: var(--text);
         }
         
         /* 发布素材列表样式 */
@@ -120,14 +124,15 @@
             display: flex;
             gap: 16px;
             padding: 16px;
-            border-radius: 8px;
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: var(--radius);
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
             transition: box-shadow 0.3s ease;
         }
         
         .published-material-item:hover {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            box-shadow: var(--shadow-hover);
         }
         
         .material-thumb {
@@ -162,7 +167,7 @@
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #115e59 0%, #14b8a6 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -173,11 +178,11 @@
         
         .user-name {
             font-weight: 500;
-            color: #333;
+            color: var(--text);
         }
         
         .material-description {
-            color: #666;
+            color: var(--muted);
             line-height: 1.5;
             flex: 1;
         }
@@ -187,12 +192,12 @@
             justify-content: space-between;
             align-items: center;
             font-size: 14px;
-            color: #999;
+            color: var(--muted);
         }
         
         .material-name {
             font-weight: 500;
-            color: #333;
+            color: var(--text);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -237,22 +242,23 @@
             align-items: center;
             justify-content: center;
             font-size: 32px;
-            background: #f5f5f5;
+            background: rgba(17, 24, 39, 0.04);
             border-radius: 4px;
         }
         
         /* 发布素材卡片样式 - 保持原有卡片样式不变 */
         .published-material-card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
             padding: 16px;
             margin-bottom: 20px;
             transition: box-shadow 0.3s ease;
         }
         
         .published-material-card:hover {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            box-shadow: var(--shadow-hover);
         }
         
         .user-info-header {
@@ -265,7 +271,7 @@
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #115e59 0%, #14b8a6 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -440,7 +446,7 @@
         .material-name-full {
             margin-top: 12px;
             font-weight: 500;
-            color: #333;
+            color: var(--text);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -460,15 +466,15 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: #333;
+            color: var(--text);
         }
         
         .form-group input,
         .form-group select {
             width: 100%;
             padding: 12px;
-            border: 1px solid #d9d9d9;
-            border-radius: 4px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
             font-family: inherit;
             font-size: 14px;
             box-sizing: border-box;
@@ -477,8 +483,8 @@
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #40a9ff;
-            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+            border-color: rgba(15, 118, 110, 0.45);
+            box-shadow: var(--ring);
         }
         
         .avatar-upload {
@@ -523,27 +529,28 @@
         .btn {
             padding: 8px 16px;
             border: none;
-            border-radius: 4px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
             font-size: 14px;
         }
         
         .btn-primary {
-            background: #1890ff;
+            background: linear-gradient(135deg, #115e59 0%, var(--primary) 55%, #14b8a6 100%);
             color: white;
         }
         
         .btn-primary:hover {
-            background: #40a9ff;
+            filter: brightness(1.03);
         }
         
         .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
+            background: rgba(255, 255, 255, 0.78);
+            color: var(--text);
+            border: 1px solid var(--border);
         }
         
         .btn-secondary:hover {
-            background: #d9d9d9;
+            background: rgba(17, 24, 39, 0.04);
         }
         
         /* 消息提示样式 */
@@ -569,7 +576,91 @@
         }
         
         .toast-info {
-            background-color: #1890ff;
+            background-color: var(--primary);
+        }
+        
+        #aiApp {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .coze-app-sdk {
+            width: 100%;
+            height: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            background: var(--card);
+        }
+        
+        .ai-app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+        
+        .ai-app-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .ai-app-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .ai-app-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .ai-app-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        
+        .ai-app-desc {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+        
+        .ai-chat-header {
+            background: var(--card);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            border-radius: var(--radius) var(--radius) 0 0;
+            backdrop-filter: blur(12px);
+        }
+        
+        .ai-back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+        
+        .ai-back-btn:hover {
+            background: rgba(17, 24, 39, 0.04);
         }
         
         @media (max-width: 768px) {
@@ -683,6 +774,18 @@
                         <span>素材中心</span>
                     </a>
                 </li>
+                <li>
+                    <a href="#" class="sidebar-menu-item" id="sidebarAiLink" onclick="showAiPage(); return false;">
+                        <div class="sidebar-menu-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                <path d="M2 17l10 5 10-5"></path>
+                                <path d="M2 12l10 5 10-5"></path>
+                            </svg>
+                        </div>
+                        <span>AI广场</span>
+                    </a>
+                </li>
             </ul>
         </div>
         
@@ -692,6 +795,14 @@
             <div id="homePage">
                 <div class="main-container" id="mainContainer">
                     <h2 class="published-materials-title">最新发布</h2>
+
+                    <iframe
+                        src="http://localhost/chatbot/UEUjVVA0LOpvZzNi"
+                        style="width: 100%; height: 100%; min-height: 700px"
+                        frameborder="0"
+                        allow="microphone">
+                    </iframe>
+
                     <div class="published-materials-list" id="publishedMaterialsList">
                         <!-- 发布的素材将通过JavaScript动态填充 -->
                         <div class="loading-placeholder">加载中...</div>
@@ -748,7 +859,7 @@
             <!-- 个人中心内容 -->
             <div id="profilePage" class="hidden">
                 <div class="main-container">
-                    <h2 style="margin-bottom: 24px; color: #333;">个人中心</h2>
+                    <h2 style="margin-bottom: 24px; color: var(--text);">个人中心</h2>
                     <form id="profileForm" class="profile-form">
                         <div class="form-group">
                             <label for="avatar">头像:</label>
@@ -784,6 +895,34 @@
                 </div>
             </div>
             
+            <!-- AI广场内容 -->
+            <div id="aiPage" class="hidden">
+                <!-- AI应用列表 -->
+                <div id="aiAppList" class="main-container">
+                    <h2 style="margin-bottom: 24px; color: var(--text);">AI应用广场</h2>
+                    <div class="ai-app-grid" id="aiAppGrid">
+                        <div style="text-align: center; color: #999; padding: 40px;">加载中...</div>
+                    </div>
+                </div>
+                
+                <!-- AI对话页面 -->
+                <div id="aiChatPage" class="hidden" style="height: calc(100vh - 160px);">
+                    <div class="ai-chat-header">
+                        <button class="ai-back-btn" onclick="backToAiAppList()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            </svg>
+                            返回
+                        </button>
+                        <h3 id="aiChatTitle" style="margin: 0; flex: 1; text-align: center;">图像生成器</h3>
+                        <div style="width: 80px;"></div>
+                    </div>
+                    <div class="main-container" style="height: calc(100% - 60px); padding: 24px;">
+                        <div id="aiApp" style="height: 100%; width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- 页面切换按钮 (移动设备上可见) -->
             <div id="pageToggle" style="text-align: center; margin-top: 20px; display: none;">
                 <button id="toggleToMaterial" class="upload-btn" onclick="showMaterialPage()">
@@ -802,15 +941,18 @@
         </div>
     </div>
 
+    <script src="https://lf-cdn.coze.cn/obj/unpkg/flow-platform/builder-web-sdk/0.1.0/dist/umd/index.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/index.js"></script>
     <script src="js/material.js"></script>
+    <script src="js/ai.js"></script>
     <script>
         // 页面切换函数
         function showMaterialPage() {
             // 隐藏其他页面，显示素材中心页面
             document.getElementById('homePage').classList.add('hidden');
             document.getElementById('profilePage').classList.add('hidden');
+            document.getElementById('aiPage').classList.add('hidden');
             document.getElementById('materialPage').classList.remove('hidden');
             
             // 更新导航按钮状态
@@ -830,6 +972,22 @@
                 
                 // 加载用户详细信息并显示真实头像
                 loadUserDetailsForDisplay(userInfo.token);
+            }
+        }
+        
+        function showAiPage() {
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('profilePage').classList.add('hidden');
+            document.getElementById('materialPage').classList.add('hidden');
+            document.getElementById('aiPage').classList.remove('hidden');
+            
+            document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById('sidebarAiLink').classList.add('active');
+            
+            if (typeof initAiPage === 'function') {
+                initAiPage();
             }
         }
         

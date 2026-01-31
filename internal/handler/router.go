@@ -11,6 +11,7 @@ func RegisterRouter(r *gin.Engine) {
 	RegisterUserRouter(r)
 	RegisterMaterialRouter(r)
 	RegisterVolcEngineRouter(r)
+	RegisterAiRouter(r)
 
 	redis.StartThumbnailWorker()
 }
