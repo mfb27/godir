@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://192.168.31.67:8081'; // 根据实际端口修改
+const API_BASE_URL = 'http://192.168.31.67:8080'; // 根据实际端口修改
 
 // 切换标签页
 function switchTab(tab) {
@@ -34,8 +34,8 @@ function checkLoginStatus() {
             // 显示用户信息
             showUserInfo(userId, username);
             
-            // 如果已经登录，则直接跳转到主页（可选）
-            // window.location.href = 'index.html';
+            // 如果已经登录，则直接跳转到主页
+            window.location.href = 'index.html';
         } catch (e) {
             console.error('解析token失败:', e);
             localStorage.removeItem('token');

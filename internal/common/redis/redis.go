@@ -3,7 +3,6 @@ package redis
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -151,12 +150,6 @@ func processThumbnailTask(task *ThumbnailTask) {
 	}
 
 	// 更新数据库中的封面信息
-	protocol := "http"
-	if svc.Cfg().MinIO.UseSSL {
-		protocol = "https"
-	}
-	coverURL := fmt.Sprintf("%s://%s/%s/%s", protocol, svc.Cfg().MinIO.Endpoint, task.Bucket, thumbKey)
-
 	db := svc.DB()
 	material := model.GodirMaterial{}
 	result := db.First(&material, task.MaterialID)
@@ -166,9 +159,8 @@ func processThumbnailTask(task *ThumbnailTask) {
 		return
 	}
 
-	material.CoverKey = thumbKey
-	material.CoverURL = coverURL
-	result = db.Model(&material).Updates(map[string]interface{}{"cover_key": material.CoverKey, "cover_url": material.CoverURL})
+	material.CoverOssFilePath = thumbKey
+	result = db.Model(&material).Updates(map[string]interface{}{"cover_oss_file_path": material.CoverOssFilePath})
 	if result.Error != nil {
 		logger.Logger.Error("更新素材封面信息失败", result.Error)
 	}

@@ -66,6 +66,8 @@ function showProfilePage() {
     // 隐藏其他页面，显示个人中心页面
     document.getElementById('homePage').classList.add('hidden');
     document.getElementById('materialPage').classList.add('hidden');
+    const aiPage = document.getElementById('aiPage');
+    if (aiPage) aiPage.classList.add('hidden');
     document.getElementById('profilePage').classList.remove('hidden');
     
     // 更新左侧导航栏活动状态
@@ -94,11 +96,15 @@ function showHomePage() {
     // 隐藏其他页面，显示主页
     const materialPage = document.getElementById('materialPage');
     const profilePage = document.getElementById('profilePage');
+    const aiPage = document.getElementById('aiPage');
     if (materialPage) {
         materialPage.classList.add('hidden');
     }
     if (profilePage) {
         profilePage.classList.add('hidden');
+    }
+    if (aiPage) {
+        aiPage.classList.add('hidden');
     }
     const homePage = document.getElementById('homePage');
     if (homePage) {

@@ -8,8 +8,8 @@ import (
 )
 
 func RegisterUserRouter(r *gin.Engine) {
-	g := r.Group("/user")
-	g.POST("/create", ginx.WrapHandlerObj((*user.User).Create))
+	// g := r.Group("/user")
+	// g.POST("/create", ginx.WrapHandlerObj((*user.User).Create))
 
 	// 需要认证的用户路由组
 	protected := r.Group("/user")

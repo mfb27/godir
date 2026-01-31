@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://192.168.31.67:8081';
+const API_BASE_URL = 'http://192.168.31.67:8080';
 
 // 简单的全局消息提示
 function showToast(msg, type = 'info') {

@@ -28,26 +28,26 @@ func (h *User) New() ginx.BaseHandlerInterface {
 	}
 }
 
-func (h *User) Create(c *gin.Context, req *types.UserCreateReq) (*types.UserCreateResp, error) {
-	if req.Source != 1 && req.Source != 2 {
-		if h.Log != nil {
-			h.Log.Info("param source is invaild")
-		}
-		return nil, fmt.Errorf("invalid source, must be 1 or 2")
-	}
-	user := model.User{
-		Name:   req.Name,
-		Source: req.Source,
-	}
-	err := h.DB.Create(&user).Error
-	if err != nil {
-		return nil, err
-	}
+// func (h *User) Create(c *gin.Context, req *types.UserCreateReq) (*types.UserCreateResp, error) {
+// 	if req.Source != 1 && req.Source != 2 {
+// 		if h.Log != nil {
+// 			h.Log.Info("param source is invaild")
+// 		}
+// 		return nil, fmt.Errorf("invalid source, must be 1 or 2")
+// 	}
+// 	user := model.User{
+// 		Name:   req.Name,
+// 		Source: req.Source,
+// 	}
+// 	err := h.DB.Create(&user).Error
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return &types.UserCreateResp{
-		UserId: user.ID,
-	}, nil
-}
+// 	return &types.UserCreateResp{
+// 		UserId: user.ID,
+// 	}, nil
+// }
 
 // Profile 获取当前用户个人信息
 func (h *User) Profile(c *gin.Context, req *types.UserProfileReq) (*types.UserProfileResp, error) {
