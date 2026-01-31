@@ -1,0 +1,33 @@
+Env: local
+Server:
+  Port: 8080
+DB:
+  Host: 192.168.31.67
+  Port: 3306
+  Username: root
+  Password: "123123"
+  Database: godir
+  MaxIdleConns: 10
+  MaxOpenConns: 20
+Log:
+  # Output: "stdout"
+  # Format: "json"
+JWT:
+  SecretKey: your-secret-key-change-in-production
+  TokenExp: 24h
+MinIO:
+  Endpoint: 192.168.31.67:9000
+  AccessKeyID: minioadmin
+  SecretAccessKey: minioadmin
+  Region: 
+  UseSSL: false
+  Bucket: godir
+Redis:
+  Addr: 192.168.31.67:6379
+  Password: 
+  DB: 0
+ES:
+  Addresses: 
+    - http://192.168.31.67:9200
+  Username: 
+  Password: 
